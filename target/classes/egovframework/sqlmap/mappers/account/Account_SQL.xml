@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="AccountMapper">
+
+     <insert id="insertAccount" parameterType="com.lime.account.vo.AccountVO">
+  	 	<selectKey keyProperty="accountSeq" resultType="int" order="BEFORE">
+   			SELECT ACCOUNT_SEQ_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO ACCOUNT_TB (ACCOUNT_SEQ, PROFIT_COST, BIG_GROUP, MIDDLE_GROUP, SMALL_GROUP, DETAIL_GROUP, COMMENTS, TRANSACTION_MONEY, TRANSACTION_DATE, WRITER, REG_DATE)
+		VALUES (#{accountSeq}, #{profitCost}, #{bigGroup}, #{middleGroup}, #{smallGroup}, #{detailGroup}, #{comments}, #{transactionMoney}, #{transactionDate}, #{writer}, SYSDATE)
+	</insert>
+    
+
+
+
+	<select id="getTotalCount" resultType="int">
+	    SELECT COUNT(*) FROM ACCOUNT_TB
+	</select>
+
+
+<select id="findAll" resultType="com.lime.account.vo.AccountVO">
+    SELECT 
+        accountSeq,
+        profitCost,
+        bigGroup,
+        middleGroup,
+        smallGroup,
+        detailGroup,
+        comments,
+        transactionMoney,
+        transactionDate,
+        writer,
+        regDate
+    FROM (
+        SELECT 
+            A.ACCOUNT_SEQ as accountSeq,
+            PC.COM_KOR as profitCost,
+            BG.COM_KOR as bigGroup,
+            MG.COM_KOR as middleGroup,
+            SG.COM_KOR as smallGroup,
+            DG.COM_KOR as detailGroup,
+            A.COMMENTS as comments,
+            A.TRANSACTION_MONEY as transactionMoney,
+            A.TRANSACTION_DATE as transactionDate,
+            A.WRITER as writer,
+            A.REG_DATE as regDate,
+            ROW_NUMBER() OVER (ORDER BY A.ACCOUNT_SEQ DESC) AS rn
+        FROM 
+            ACCOUNT_TB A
+        LEFT JOIN CODE_MASTER PC ON A.PROFIT_COST = PC.CODE
+        LEFT JOIN CODE_MASTER BG ON A.BIG_GROUP = BG.CODE
+        LEFT JOIN CODE_MASTER MG ON A.MIDDLE_GROUP = MG.CODE
+        LEFT JOIN CODE_MASTER SG ON A.SMALL_GROUP = SG.CODE
+        LEFT JOIN CODE_MASTER DG ON A.DETAIL_GROUP = DG.CODE
+    ) WHERE rn BETWEEN #{firstIndex} + 1 AND #{firstIndex} + #{recordCountPerPage}
+</select>   
+
+<select id="findAllList" resultType="com.lime.account.vo.AccountVO">
+    
+        SELECT 
+            A.ACCOUNT_SEQ as accountSeq,
+            PC.COM_KOR as profitCost,
+            BG.COM_KOR as bigGroup,
+            MG.COM_KOR as middleGroup,
+            SG.COM_KOR as smallGroup,
+            DG.COM_KOR as detailGroup,
+            A.COMMENTS as comments,
+            A.TRANSACTION_MONEY as transactionMoney,
+            A.TRANSACTION_DATE as transactionDate,
+            A.WRITER as writer,
+            A.REG_DATE as regDate
+        FROM 
+            ACCOUNT_TB A
+        LEFT JOIN CODE_MASTER PC ON A.PROFIT_COST = PC.CODE
+        LEFT JOIN CODE_MASTER BG ON A.BIG_GROUP = BG.CODE
+        LEFT JOIN CODE_MASTER MG ON A.MIDDLE_GROUP = MG.CODE
+        LEFT JOIN CODE_MASTER SG ON A.SMALL_GROUP = SG.CODE
+        LEFT JOIN CODE_MASTER DG ON A.DETAIL_GROUP = DG.CODE
+    
+</select>   
+
+
+
+    
+  
+<!--     <select id="getAccountById" parameterType="int" resultType="com.lime.account.vo.AccountVO">
+    	SELECT * FROM ACCOUNT_TB WHERE ACCOUNT_SEQ = #{id}
+	</select> -->
+	
+	<select id="getAccountById" parameterType="int" resultType="com.lime.account.vo.AccountVO">
+		  SELECT
+		      ACCOUNT_SEQ as accountSeq,
+		      PROFIT_COST AS profitCost,
+		      BIG_GROUP AS bigGroup,
+		      MIDDLE_GROUP AS middleGroup,
+		      SMALL_GROUP AS smallGroup,
+		      DETAIL_GROUP AS detailGroup,
+		      COMMENTS AS comments,
+		      TRANSACTION_MONEY AS transactionMoney,
+		      TRANSACTION_DATE AS transactionDate,
+		      WRITER AS writer,
+		      REG_DATE as regDate
+		  FROM ACCOUNT_TB
+		  WHERE ACCOUNT_SEQ = #{id}
+	</select>
+	
+	<update id="updateAccount" parameterType="com.lime.account.vo.AccountVO">
+	    UPDATE ACCOUNT_TB 
+	    SET 
+	        PROFIT_COST = #{profitCost},
+	        BIG_GROUP = #{bigGroup},
+	        MIDDLE_GROUP = #{middleGroup},
+	        SMALL_GROUP = #{smallGroup},
+	        DETAIL_GROUP = #{detailGroup},
+	        COMMENTS = #{comments},
+	        TRANSACTION_MONEY = #{transactionMoney},
+	        TRANSACTION_DATE = TO_DATE(#{transactionDate}, 'YYYY-MM-DD'),
+	        WRITER = #{writer}
+	    WHERE 
+	        ACCOUNT_SEQ = #{accountSeq}
+</update>
+
+
+</mapper>
